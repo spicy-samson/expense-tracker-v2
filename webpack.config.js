@@ -1,30 +1,52 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals');
 
-module.exports = {
-  mode: 'development', // or 'production'
+const frontendConfig = {
   entry: './src/index.tsx',
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+  },
   module: {
     rules: [
       {
-        test: /\.(ts|tsx)$/,
+        test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
     ],
   },
-  resolve: {
-    extensions: ['.ts', '.tsx', '.js'],
+  devServer: {
+    static: './dist',
+    port: 9000, // Port for the frontend
   },
+  mode: 'development',
+};
+
+const backendConfig = {
+  entry: './src/server.ts',
+  target: 'node',
+  externals: [nodeExternals()],
   output: {
-    filename: 'bundle.js',
+    filename: 'server.js',
     path: path.resolve(__dirname, 'dist'),
   },
-  devServer: {
-    static: {
-      directory: path.join(__dirname, 'dist'),
-    },
-    compress: true,
-    port: 9000,
-    open: true,
+  resolve: {
+    extensions: ['.ts', '.js'],
   },
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  mode: 'development',
 };
+
+module.exports = [frontendConfig, backendConfig];
