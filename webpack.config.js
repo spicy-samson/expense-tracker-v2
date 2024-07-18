@@ -1,5 +1,7 @@
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const frontendConfig = {
   entry: './src/index.tsx',
@@ -17,11 +19,29 @@ const frontendConfig = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+      },
     ],
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './public/index.html', // Ensure this path is correct
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'public', to: 'public' }, // This copies the 'public' folder to 'dist/public'
+      ],
+    }),
+  ],
   devServer: {
     static: './dist',
-    port: 9000, // Port for the frontend
+    port: 9000,
   },
   mode: 'development',
 };

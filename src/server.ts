@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { query } from './db';
+import path from 'path';
 import { Expense } from './services/Expense';
 
 const app = express();
@@ -8,7 +9,8 @@ const port = 3000;
 
 app.use(cors());
 app.use(express.json());
-
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
 
 app.get('/api/expenses', async (req, res) => {
   try {
@@ -29,6 +31,11 @@ app.get('/api/expenses', async (req, res) => {
     console.error('Error fetching expenses', err);
     res.status(500).send('Server error');
   }
+});
+
+// Serve the frontend
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(port, () => {
