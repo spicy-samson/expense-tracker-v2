@@ -1,5 +1,5 @@
 export class Expense {
-  expense_id: number;
+expense_id: number; 
   name: string;
   price: number;
   quantity: number | null;

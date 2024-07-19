@@ -8,6 +8,7 @@ const frontendConfig = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
+    publicPath: '/'  // Ensure the publicPath is set to '/'
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
@@ -40,9 +41,13 @@ const frontendConfig = {
     }),
   ],
   devServer: {
-    static: './dist',
-    port: 9000,
-  },
+     historyApiFallback: true,  // Important for React Router
+     static: {
+       directory: path.join(__dirname, 'dist')
+     },
+     compress: true,
+     port: 9000
+   },
   mode: 'development',
 };
 
