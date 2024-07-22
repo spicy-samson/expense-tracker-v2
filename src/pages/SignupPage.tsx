@@ -13,6 +13,7 @@ import {
   Paper,
   Box,
   Grid,
+  Alert
 } from "@mui/material";
 import AppRegistrationOutlinedIcon from "@mui/icons-material/AppRegistrationOutlined";
 import Typography from "@mui/material/Typography";
@@ -36,6 +37,7 @@ const defaultTheme = createTheme();
 export default function SignupPage() {
   const [gender, setGender] = React.useState("");
   const [birthdate, setBirthdate] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -51,11 +53,24 @@ export default function SignupPage() {
       gender: data.get("gender"),
       birthdate: data.get("birthdate"),
     };
+    
+    if(
+          !user.first_name ||
+          !user.last_name ||
+          !user.email ||
+          !user.password ||
+          !user.address ||
+          !user.gender ||
+          !user.birthdate
+        ) {
+          setError("All fields are required");
+          return;
+        }
 
     try {
       const response = await fetch('http://localhost:3000/api/signup', {
         method: 'POST',
-        headers: {
+        headers:  {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(user),
@@ -108,6 +123,11 @@ export default function SignupPage() {
             <Typography component="h1" variant="h5">
               Sign Up
             </Typography>
+            {error && (
+                          <Alert severity="error" sx={{ width: '100%' }}>
+                            {error}
+                          </Alert>
+                        )}
             <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
               <TextField
                 margin="normal"

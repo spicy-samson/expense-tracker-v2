@@ -4,6 +4,7 @@ import { query } from './db';
 import path from 'path';
 import { Expense } from './services/Expense';
 import bcrypt from 'bcryptjs';
+import { User } from './services/User';
 
 const app = express();
 const port = 3000;
@@ -18,11 +19,17 @@ app.post('/api/signup', async (req, res) => {
   const { first_name, last_name, email, password, address, gender, birthdate } = req.body;
   
   try {
+    const userCheck = await query('SELECT * FROM users WHERE email_address = $1', [email]);
+    if(userCheck.rows.length>0){
+      return res.status(409).send('Email is already in use');
+    }
+    
     const hashedPassword = await bcrypt.hash(password, 10);
-    await query(
+    const result = await query(
       'INSERT INTO users (first_name, last_name, email_address, password, address, gender, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [first_name, last_name, email, hashedPassword, address, gender, birthdate]
     );
+    const newUser = result.rows[0]
     res.status(201).send('User created successfully');
   } catch (err) {
     console.error('Error creating user (from server ini na mssg)', err);
@@ -36,7 +43,7 @@ app.post('/api/login', async (req, res) => {
     const result = await query('SELECT * FROM users WHERE email_address = $1', [email]);
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
-      res.status(200).json(user);
+      res.status(200).json(user); 
     } else {
       res.status(401).send('Invalid email or password');
     }
