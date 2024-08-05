@@ -4,10 +4,11 @@ import { query } from './db';
 import path from 'path';
 import { Expense } from './services/Expense';
 import bcrypt from 'bcryptjs';
-import { User } from './services/User';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 const port = 3000;
+const secretKey = 'your_secret_key'; // Use a strong secret key and store it securely
 
 app.use(cors());
 app.use(express.json());
@@ -21,7 +22,7 @@ app.post('/api/signup', async (req, res) => {
   try {
     const userCheck = await query('SELECT * FROM users WHERE email_address = $1', [email]);
     if(userCheck.rows.length>0){
-      return res.status(409).send('Email is already in use');
+      return res.status(409).send('Ang email ay ginagamit na tabi.');
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -44,6 +45,9 @@ app.post('/api/login', async (req, res) => {
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
       res.status(200).json(user); 
+      // Create a JWT with the user's ID and other information
+            const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: '1h' });
+            res.status(200).json({ token });
     } else {
       res.status(401).send('Invalid email or password');
     }
@@ -53,6 +57,11 @@ app.post('/api/login', async (req, res) => {
   }
 });
    
+
+app.get('/api/user', async(req,res)=>{
+  
+  
+})
 app.get('/api/expenses', async (req, res) => {
   try {
     const result = await query('SELECT * FROM "expense"');
