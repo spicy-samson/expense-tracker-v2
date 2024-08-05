@@ -13,7 +13,8 @@ import {
   Paper,
   Box,
   Grid,
-  Alert
+  Alert,
+  CircularProgress
 } from "@mui/material";
 import AppRegistrationOutlinedIcon from "@mui/icons-material/AppRegistrationOutlined";
 import Typography from "@mui/material/Typography";
@@ -38,6 +39,9 @@ export default function SignupPage() {
   const [gender, setGender] = React.useState("");
   const [birthdate, setBirthdate] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [password, setPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -49,24 +53,33 @@ export default function SignupPage() {
       last_name: data.get("last_name"),
       email: data.get("email"),
       password: data.get("password"),
+      confirm_password: data.get("confirm_password"),
       address: data.get("address"),
       gender: data.get("gender"),
       birthdate: data.get("birthdate"),
     };
     
     if(
-          !user.first_name ||
-          !user.last_name ||
-          !user.email ||
-          !user.password ||
-          !user.address ||
-          !user.gender ||
-          !user.birthdate
-        ) {
-          setError("All fields are required");
-          return;
+      !user.first_name ||
+      !user.last_name ||
+      !user.email ||
+      !user.password ||
+      !user.address ||
+      !user.gender ||
+      !user.birthdate
+       ){
+        setError("All fields are required");
+        return;
         }
-
+   
+    if(user.password != user.confirm_password){
+      setError("Passwords do not match.");
+      return;
+        }
+    
+    setLoading(true);
+    setError(null);
+    
     try {
       const response = await fetch('http://localhost:3000/api/signup', {
         method: 'POST',
@@ -80,10 +93,14 @@ export default function SignupPage() {
         console.log("User created successfully");
         navigate('/'); // Redirect to the home page or login page after successful signup
       } else {
-        console.error("Error creating user");
+        const errorMessage = await response.text();
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error("Network error", error);
+      setError("Network error");
+      console.error("Network error", error); 
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -172,6 +189,19 @@ export default function SignupPage() {
                 id="password"
                 autoComplete="current-password"
               />
+              
+              <TextField
+                 margin="normal"
+                 required
+                 fullWidth
+                 name="confirm_password"
+                 label="Confirm Password"
+                 type="password"
+                 id="confirm_password"
+                 autoComplete="confirm-password"
+                 value={confirmPassword}
+                 onChange={(e) => setConfirmPassword(e.target.value)}
+              />
 
               <TextField
                 margin="normal"
@@ -217,15 +247,30 @@ export default function SignupPage() {
                 </Select>
               </FormControl>
 
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Sign Up
-              </Button>
-              <Grid container>
+              <Box sx={{ position: 'relative' }}>
+                              <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                sx={{ mt: 3, mb: 2 }}
+                                disabled={loading}
+                              >
+                                Sign Up
+                              </Button>
+                              {loading && (
+                                <CircularProgress
+                                  size={24}
+                                  sx={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    marginTop: '-12px',
+                                    marginLeft: '-12px',
+                                  }}
+                                />
+                              )}
+                </Box>
+                <Grid container>
                 <Grid item xs></Grid>
                 <Grid item>
                   <Link component={RouterLink} to="/" variant="body2">
