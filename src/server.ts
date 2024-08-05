@@ -4,7 +4,7 @@ import { query } from './db';
 import path from 'path';
 import { Expense } from './services/Expense';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+
 
 const app = express();
 const port = 3000;
@@ -45,9 +45,7 @@ app.post('/api/login', async (req, res) => {
     const user = result.rows[0];
     if (user && await bcrypt.compare(password, user.password)) {
       res.status(200).json(user); 
-      // Create a JWT with the user's ID and other information
-            const token = jwt.sign({ userId: user.id }, secretKey, { expiresIn: '1h' });
-            res.status(200).json({ token });
+
     } else {
       res.status(401).send('Invalid email or password');
     }
